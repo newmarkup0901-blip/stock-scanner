@@ -1,0 +1,323 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.app{max-width:380px;margin:0 auto;padding:12px;background:var(--color-background-tertiary);min-height:600px}
+.header{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.header-icon{width:36px;height:36px;border-radius:var(--border-radius-md);background:#E1F5EE;display:flex;align-items:center;justify-content:center}
+.header-icon i{font-size:20px;color:#0F6E56}
+.header-text h2{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:1px}
+.header-text p{font-size:12px;color:var(--color-text-secondary)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
+.badge-green{background:#EAF3DE;color:#3B6D11}
+.badge-amber{background:#FAEEDA;color:#854F0B}
+.card{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:14px 16px;margin-bottom:10px}
+.card-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em}
+.scan-box{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:background 0.15s}
+.scan-box:hover{background:var(--color-background-secondary)}
+.scan-box i{font-size:32px;color:var(--color-text-tertiary)}
+.scan-box p{font-size:13px;color:var(--color-text-secondary)}
+.barcode-result{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.barcode-value{font-size:16px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-mono)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;color:var(--color-text-secondary);font-weight:500}
+.field input,.field select{font-size:14px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);width:100%}
+.field.full{grid-column:1/-1}
+.qty-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.qty-btn{width:34px;height:34px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-primary)}
+.qty-btn:hover{background:var(--color-background-secondary)}
+.qty-input{flex:1;text-align:center;font-size:18px;font-weight:500;padding:6px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.qty-unit{font-size:13px;color:var(--color-text-secondary)}
+.btn-primary{width:100%;padding:11px;border-radius:var(--border-radius-md);background:#1D9E75;border:none;color:#fff;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+.btn-primary:hover{background:#0F6E56}
+.btn-primary:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:not-allowed}
+.btn-secondary{width:100%;padding:9px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}
+.btn-secondary:hover{background:var(--color-background-secondary)}
+.batch-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:200px;overflow-y:auto}
+.batch-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
+.batch-num{width:20px;height:20px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#0F6E56;flex-shrink:0}
+.batch-info{flex:1;min-width:0}
+.batch-code{font-size:13px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-mono)}
+.batch-meta{font-size:11px;color:var(--color-text-secondary)}
+.batch-qty{font-size:13px;font-weight:500;color:#0F6E56}
+.batch-del{background:none;border:none;cursor:pointer;color:var(--color-text-tertiary);padding:2px;display:flex;align-items:center}
+.batch-del:hover{color:#A32D2D}
+.count-pill{display:inline-flex;align-items:center;gap:4px;background:#EAF3DE;color:#3B6D11;font-size:12px;padding:2px 8px;border-radius:20px;font-weight:500}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:10px 0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;font-size:13px;padding:10px 20px;border-radius:30px;display:none;align-items:center;gap:8px;z-index:999;white-space:nowrap}
+.toast.show{display:flex}
+.sheet-url-row{display:flex;gap:6px;margin-top:8px}
+.sheet-url-row input{flex:1;font-size:13px}
+.sheet-url-row button{padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;font-size:13px;white-space:nowrap}
+.sheet-url-row button:hover{background:var(--color-background-secondary)}
+.step-tabs{display:flex;gap:6px;margin-bottom:10px}
+.step-tab{flex:1;padding:8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);font-size:13px;cursor:pointer;text-align:center;color:var(--color-text-secondary)}
+.step-tab.active{border-color:#1D9E75;background:#E1F5EE;color:#0F6E56;font-weight:500}
+</style>
+
+<h2 class="sr-only">แอปสแกนบาร์โค้ดสต็อกสินค้า เชื่อมต่อ Google Sheet</h2>
+
+<div class="app">
+  <div class="header">
+    <div class="header-icon"><i class="ti ti-scan" aria-hidden="true"></i></div>
+    <div class="header-text">
+      <h2>Stock Scanner</h2>
+      <p>SAP Warehouse → Google Sheet</p>
+    </div>
+    <div style="margin-left:auto">
+      <span class="badge badge-green" id="conn-badge"><i class="ti ti-circle-filled" style="font-size:8px"></i> พร้อม</span>
+    </div>
+  </div>
+
+  <div class="step-tabs">
+    <button class="step-tab active" onclick="setTab('scan')"><i class="ti ti-scan" aria-hidden="true"></i> สแกน</button>
+    <button class="step-tab" onclick="setTab('batch')"><i class="ti ti-list-check" aria-hidden="true"></i> รายการ <span class="count-pill" id="batch-count">0</span></button>
+    <button class="step-tab" onclick="setTab('settings')"><i class="ti ti-settings" aria-hidden="true"></i> ตั้งค่า</button>
+  </div>
+
+  <div id="tab-scan">
+    <div class="card">
+      <div class="card-label">สแกนบาร์โค้ด</div>
+      <div class="scan-box" onclick="simulateScan()">
+        <i class="ti ti-barcode" aria-hidden="true"></i>
+        <p>แตะเพื่อสแกน</p>
+      </div>
+      <div class="barcode-result" id="scan-result" style="display:none">
+        <div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:2px">Material Code</div>
+          <div class="barcode-value" id="scanned-code">—</div>
+        </div>
+        <span class="badge badge-green"><i class="ti ti-check" style="font-size:10px"></i> สแกนแล้ว</span>
+      </div>
+    </div>
+
+    <div class="card" id="form-card" style="display:none">
+      <div class="card-label">รายละเอียด</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Storage Location</label>
+          <select id="loc">
+            <option>WH-01</option><option>WH-02</option><option>WH-03</option><option>WH-04</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Batch No.</label>
+          <input type="text" id="batch-no" placeholder="เช่น BT2405001">
+        </div>
+        <div class="field full">
+          <label>จำนวน (Quantity)</label>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <input type="number" class="qty-input" id="qty" value="1" min="1">
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+            <span class="qty-unit">EA</span>
+          </div>
+        </div>
+      </div>
+      <hr class="divider">
+      <button class="btn-primary" onclick="addToBatch()">
+        <i class="ti ti-plus" aria-hidden="true"></i> เพิ่มเข้ารายการ Batch
+      </button>
+      <button class="btn-secondary" onclick="sendSingle()">
+        <i class="ti ti-send" aria-hidden="true"></i> ส่ง Google Sheet ทันที
+      </button>
+    </div>
+  </div>
+
+  <div id="tab-batch" style="display:none">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="card-label" style="margin-bottom:0">รายการที่รอส่ง</div>
+        <span class="count-pill" id="batch-count2">0 รายการ</span>
+      </div>
+      <div class="batch-list" id="batch-list">
+        <div style="text-align:center;padding:20px;color:var(--color-text-tertiary);font-size:13px">
+          <i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>
+          ยังไม่มีรายการ
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" id="send-batch-btn" onclick="sendBatch()" style="margin-top:0" disabled>
+      <i class="ti ti-cloud-upload" aria-hidden="true"></i> ส่งทั้งหมดไป Google Sheet
+    </button>
+    <button class="btn-secondary" onclick="clearBatch()">
+      <i class="ti ti-trash" aria-hidden="true"></i> ล้างรายการทั้งหมด
+    </button>
+  </div>
+
+  <div id="tab-settings" style="display:none">
+    <div class="card">
+      <div class="card-label">เชื่อมต่อ Google Sheet</div>
+      <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">วาง URL ของ Google Apps Script Web App (Deployment URL)</p>
+      <div class="sheet-url-row">
+        <input type="text" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec">
+        <button onclick="saveUrl()"><i class="ti ti-check" aria-hidden="true"></i> บันทึก</button>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)">
+        <p style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px"><i class="ti ti-info-circle" aria-hidden="true"></i> วิธีเชื่อม Google Sheet</p>
+        <ol style="font-size:12px;color:var(--color-text-secondary);padding-left:16px;line-height:1.8">
+          <li>เปิด Google Sheet → Extensions → Apps Script</li>
+          <li>วาง Google Apps Script Code</li>
+          <li>Deploy → New deployment → Web app</li>
+          <li>Copy URL มาใส่ช่องด้านบน</li>
+        </ol>
+      </div>
+      <button class="btn-secondary" style="margin-top:8px" onclick="sendPrompt('ขอ Google Apps Script Code สำหรับรับข้อมูลจากแอปสแกนบาร์โค้ดและบันทึกลง Google Sheet ↗')">
+        <i class="ti ti-code" aria-hidden="true"></i> ขอ Script Code ↗
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-label">ข้อมูลเริ่มต้น</div>
+      <div class="field-row">
+        <div class="field full">
+          <label>ผู้สแกน (User)</label>
+          <input type="text" id="user-name" placeholder="ชื่อพนักงาน">
+        </div>
+        <div class="field full">
+          <label>Plant / โรงงาน</label>
+          <input type="text" id="plant" placeholder="เช่น PLANT-01">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveSettings()" style="margin-top:8px">
+        <i class="ti ti-device-floppy" aria-hidden="true"></i> บันทึกการตั้งค่า
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check"></i> <span id="toast-msg"></span></div>
+
+<script>
+let batchItems = [];
+let scannedCode = '';
+let gasUrl = '';
+const codes = ['MAT-10045','MAT-20312','MAT-30087','MAT-40156','MAT-50023'];
+let codeIdx = 0;
+
+function setTab(t) {
+  ['scan','batch','settings'].forEach(x => {
+    document.getElementById('tab-'+x).style.display = x===t?'block':'none';
+  });
+  document.querySelectorAll('.step-tab').forEach((el,i) => {
+    el.classList.toggle('active', ['scan','batch','settings'][i]===t);
+  });
+}
+
+function simulateScan() {
+  scannedCode = codes[codeIdx % codes.length];
+  codeIdx++;
+  document.getElementById('scanned-code').textContent = scannedCode;
+  document.getElementById('scan-result').style.display = 'flex';
+  document.getElementById('form-card').style.display = 'block';
+  document.getElementById('qty').value = 1;
+  document.getElementById('batch-no').value = '';
+}
+
+function changeQty(d) {
+  const el = document.getElementById('qty');
+  el.value = Math.max(1, parseInt(el.value||1) + d);
+}
+
+function getRow() {
+  return {
+    timestamp: new Date().toLocaleString('th-TH'),
+    material: scannedCode,
+    location: document.getElementById('loc').value,
+    batch: document.getElementById('batch-no').value || '-',
+    qty: parseInt(document.getElementById('qty').value),
+    user: document.getElementById('user-name')?.value || '-',
+    plant: document.getElementById('plant')?.value || '-'
+  };
+}
+
+function addToBatch() {
+  if (!scannedCode) return;
+  batchItems.push(getRow());
+  updateBatchUI();
+  showToast('เพิ่มเข้า Batch แล้ว (' + batchItems.length + ' รายการ)');
+  document.getElementById('scan-result').style.display = 'none';
+  document.getElementById('form-card').style.display = 'none';
+  scannedCode = '';
+}
+
+function updateBatchUI() {
+  const count = batchItems.length;
+  document.getElementById('batch-count').textContent = count;
+  document.getElementById('batch-count2').textContent = count + ' รายการ';
+  document.getElementById('send-batch-btn').disabled = count === 0;
+  const list = document.getElementById('batch-list');
+  if (count === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--color-text-tertiary);font-size:13px"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px"></i>ยังไม่มีรายการ</div>';
+    return;
+  }
+  list.innerHTML = batchItems.map((item, i) =>
+    `<div class="batch-item">
+      <div class="batch-num">${i+1}</div>
+      <div class="batch-info">
+        <div class="batch-code">${item.material}</div>
+        <div class="batch-meta">${item.location} · Batch: ${item.batch}</div>
+      </div>
+      <div class="batch-qty">${item.qty} EA</div>
+      <button class="batch-del" onclick="removeItem(${i})" aria-label="ลบ"><i class="ti ti-x" style="font-size:14px"></i></button>
+    </div>`
+  ).join('');
+}
+
+function removeItem(i) {
+  batchItems.splice(i, 1);
+  updateBatchUI();
+}
+
+function clearBatch() {
+  if (batchItems.length === 0) return;
+  batchItems = [];
+  updateBatchUI();
+  showToast('ล้างรายการแล้ว');
+}
+
+async function sendToSheet(rows) {
+  const url = gasUrl || localStorage.getItem('gasUrl');
+  if (!url) { showToast('⚠️ ยังไม่ได้ตั้งค่า URL ของ Sheet'); setTab('settings'); return false; }
+  try {
+    await fetch(url, { method:'POST', mode:'no-cors', body: JSON.stringify({rows}) });
+    return true;
+  } catch(e) { return false; }
+}
+
+async function sendSingle() {
+  if (!scannedCode) return;
+  const row = getRow();
+  showToast('กำลังส่ง...');
+  const ok = await sendToSheet([row]);
+  showToast(ok ? '✓ ส่ง Google Sheet สำเร็จ' : '✓ ส่งแล้ว (no-cors mode)');
+  document.getElementById('scan-result').style.display = 'none';
+  document.getElementById('form-card').style.display = 'none';
+  scannedCode = '';
+}
+
+async function sendBatch() {
+  if (batchItems.length === 0) return;
+  showToast('กำลังส่ง ' + batchItems.length + ' รายการ...');
+  const ok = await sendToSheet(batchItems);
+  showToast('✓ ส่ง ' + batchItems.length + ' รายการไป Sheet แล้ว');
+  batchItems = [];
+  updateBatchUI();
+}
+
+function saveUrl() {
+  gasUrl = document.getElementById('gas-url').value;
+  localStorage.setItem('gasUrl', gasUrl);
+  showToast('บันทึก URL แล้ว');
+  document.getElementById('conn-badge').innerHTML = '<i class="ti ti-circle-filled" style="font-size:8px"></i> เชื่อมแล้ว';
+}
+
+function saveSettings() { showToast('บันทึกการตั้งค่าแล้ว'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>

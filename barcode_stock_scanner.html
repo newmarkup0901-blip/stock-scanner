@@ -1,233 +1,460 @@
-
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stock Scanner">
+<meta name="theme-color" content="#0a0a0a">
+<title>Stock Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans)}
-.app{max-width:380px;margin:0 auto;padding:12px;background:var(--color-background-tertiary);min-height:600px}
-.header{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
-.header-icon{width:36px;height:36px;border-radius:var(--border-radius-md);background:#E1F5EE;display:flex;align-items:center;justify-content:center}
-.header-icon i{font-size:20px;color:#0F6E56}
-.header-text h2{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:1px}
-.header-text p{font-size:12px;color:var(--color-text-secondary)}
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
-.badge-green{background:#EAF3DE;color:#3B6D11}
-.badge-amber{background:#FAEEDA;color:#854F0B}
-.card{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:14px 16px;margin-bottom:10px}
-.card-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em}
-.scan-box{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:background 0.15s}
-.scan-box:hover{background:var(--color-background-secondary)}
-.scan-box i{font-size:32px;color:var(--color-text-tertiary)}
-.scan-box p{font-size:13px;color:var(--color-text-secondary)}
-.barcode-result{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-top:8px}
-.barcode-value{font-size:16px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-mono)}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:12px;color:var(--color-text-secondary);font-weight:500}
-.field input,.field select{font-size:14px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);width:100%}
-.field.full{grid-column:1/-1}
-.qty-row{display:flex;align-items:center;gap:8px;margin-top:8px}
-.qty-btn{width:34px;height:34px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-primary)}
-.qty-btn:hover{background:var(--color-background-secondary)}
-.qty-input{flex:1;text-align:center;font-size:18px;font-weight:500;padding:6px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
-.qty-unit{font-size:13px;color:var(--color-text-secondary)}
-.btn-primary{width:100%;padding:11px;border-radius:var(--border-radius-md);background:#1D9E75;border:none;color:#fff;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
-.btn-primary:hover{background:#0F6E56}
-.btn-primary:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:not-allowed}
-.btn-secondary{width:100%;padding:9px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}
-.btn-secondary:hover{background:var(--color-background-secondary)}
-.batch-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:200px;overflow-y:auto}
-.batch-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
-.batch-num{width:20px;height:20px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#0F6E56;flex-shrink:0}
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface2: #242424;
+  --surface3: #2e2e2e;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --green: #00e676;
+  --green-dim: #00c853;
+  --green-bg: rgba(0,230,118,0.08);
+  --green-bg2: rgba(0,230,118,0.15);
+  --text: #f0f0f0;
+  --text2: #999;
+  --text3: #555;
+  --red: #ff5252;
+  --red-bg: rgba(255,82,82,0.1);
+  --amber: #ffab40;
+  --amber-bg: rgba(255,171,64,0.1);
+  --r: 14px;
+  --r-sm: 8px;
+  --r-xs: 6px;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Noto Sans Thai', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:15px}
+
+/* Layout */
+.shell{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:430px;margin:0 auto}
+
+/* Header */
+.topbar{padding:env(safe-area-inset-top,16px) 20px 16px;background:var(--bg);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-icon{width:36px;height:36px;border-radius:10px;background:var(--green-bg2);border:1px solid rgba(0,230,118,0.25);display:flex;align-items:center;justify-content:center}
+.topbar-icon svg{width:20px;height:20px;stroke:var(--green)}
+.topbar-title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.topbar-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.status-dot{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Nav */
+.bottom-nav{display:flex;background:var(--surface);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-item{flex:1;padding:10px 0 8px;border:none;background:none;color:var(--text3);font-size:10px;font-family:var(--sans);display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;transition:color .2s}
+.nav-item svg{width:22px;height:22px;stroke-width:1.8}
+.nav-item.active{color:var(--green)}
+.nav-item.active svg{stroke:var(--green)}
+.nav-badge{position:absolute;top:7px;right:calc(50% - 20px);background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;display:none}
+
+/* Pages */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;padding:16px;display:none;-webkit-overflow-scrolling:touch}
+.page.active{display:block}
+.page::-webkit-scrollbar{display:none}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.card-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+
+/* Scan button */
+.scan-trigger{width:100%;padding:0;background:none;border:none;cursor:pointer;display:block}
+.scan-area{border:1.5px dashed rgba(0,230,118,0.3);border-radius:var(--r-sm);padding:32px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--green-bg);transition:background .15s,border-color .15s}
+.scan-trigger:active .scan-area{background:var(--green-bg2);border-color:rgba(0,230,118,.6)}
+.scan-area-icon{width:56px;height:56px;border-radius:16px;background:rgba(0,230,118,0.12);border:1px solid rgba(0,230,118,0.2);display:flex;align-items:center;justify-content:center}
+.scan-area-icon svg{width:28px;height:28px;stroke:var(--green)}
+.scan-area-label{font-size:15px;font-weight:600;color:var(--green)}
+.scan-area-sub{font-size:12px;color:var(--text3)}
+
+/* Result */
+.result-bar{background:var(--surface2);border:1px solid rgba(0,230,118,0.2);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-top:10px;display:none}
+.result-code{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--green)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+.chip-green{background:var(--green-bg2);color:var(--green)}
+.chip-red{background:var(--red-bg);color:var(--red)}
+
+/* Fields */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field-grid.full{grid-template-columns:1fr}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.field input,.field select{width:100%;padding:11px 13px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);font-size:14px;font-family:var(--sans);-webkit-appearance:none;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* Qty */
+.qty-wrap{display:flex;align-items:center;gap:8px}
+.qty-btn{width:42px;height:42px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.qty-btn:active{background:var(--surface3)}
+.qty-input{flex:1;text-align:center;font-size:20px;font-weight:700;font-family:var(--mono);color:var(--text)}
+
+/* Buttons */
+.btn{width:100%;padding:14px;border-radius:var(--r-sm);border:none;font-size:14px;font-weight:600;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;transition:opacity .15s,transform .1s}
+.btn:active{transform:scale(.98);opacity:.9}
+.btn-green{background:var(--green);color:#000}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,82,82,0.2)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn svg{width:18px;height:18px;stroke-width:2.5;flex-shrink:0}
+
+/* Divider */
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+
+/* Batch */
+.summary-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px}
+.stat-num{font-size:28px;font-weight:700;color:var(--green);font-family:var(--mono)}
+.stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+.batch-list{display:flex;flex-direction:column;gap:6px}
+.batch-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border)}
+.batch-num-circle{width:24px;height:24px;border-radius:50%;background:var(--green-bg2);border:1px solid rgba(0,230,118,0.2);color:var(--green);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono)}
 .batch-info{flex:1;min-width:0}
-.batch-code{font-size:13px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-mono)}
-.batch-meta{font-size:11px;color:var(--color-text-secondary)}
-.batch-qty{font-size:13px;font-weight:500;color:#0F6E56}
-.batch-del{background:none;border:none;cursor:pointer;color:var(--color-text-tertiary);padding:2px;display:flex;align-items:center}
-.batch-del:hover{color:#A32D2D}
-.count-pill{display:inline-flex;align-items:center;gap:4px;background:#EAF3DE;color:#3B6D11;font-size:12px;padding:2px 8px;border-radius:20px;font-weight:500}
-.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:10px 0}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;font-size:13px;padding:10px 20px;border-radius:30px;display:none;align-items:center;gap:8px;z-index:999;white-space:nowrap}
-.toast.show{display:flex}
-.sheet-url-row{display:flex;gap:6px;margin-top:8px}
-.sheet-url-row input{flex:1;font-size:13px}
-.sheet-url-row button{padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;font-size:13px;white-space:nowrap}
-.sheet-url-row button:hover{background:var(--color-background-secondary)}
-.step-tabs{display:flex;gap:6px;margin-bottom:10px}
-.step-tab{flex:1;padding:8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);font-size:13px;cursor:pointer;text-align:center;color:var(--color-text-secondary)}
-.step-tab.active{border-color:#1D9E75;background:#E1F5EE;color:#0F6E56;font-weight:500}
+.batch-code{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)}
+.batch-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.batch-qty-badge{font-size:13px;font-weight:700;color:var(--green);font-family:var(--mono);white-space:nowrap}
+.del-btn{width:28px;height:28px;border-radius:50%;border:none;background:var(--red-bg);color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.del-btn svg{width:14px;height:14px;stroke-width:2.5}
+.empty-state{text-align:center;padding:32px 16px;color:var(--text3)}
+.empty-state svg{width:40px;height:40px;margin-bottom:12px;opacity:.3}
+
+/* Settings */
+.setting-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.url-box{font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--surface2);padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--border);word-break:break-all;margin-bottom:10px;line-height:1.6}
+.info-box{background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;margin-top:10px}
+.info-step{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.info-step:last-child{margin-bottom:0}
+.info-step-num{width:18px;height:18px;border-radius:50%;background:var(--green-bg2);color:var(--green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.info-step p{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* Camera Modal */
+.modal{display:none;position:fixed;inset:0;z-index:200;background:#000;flex-direction:column;max-width:430px;margin:0 auto}
+.modal.open{display:flex}
+.modal-top{padding:env(safe-area-inset-top,20px) 16px 12px;display:flex;align-items:center;gap:12px;position:relative;z-index:2}
+.modal-top span{color:#fff;font-size:16px;font-weight:700;flex:1}
+.close-modal{width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.close-modal svg{width:18px;height:18px;stroke-width:2.5}
+.video-wrap{flex:1;position:relative;overflow:hidden}
+#video{width:100%;height:100%;object-fit:cover}
+.scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.scan-frame{width:230px;height:150px;position:relative;box-shadow:0 0 0 9999px rgba(0,0,0,0.6)}
+.scan-frame::before,.scan-frame::after{content:'';position:absolute;width:20px;height:20px;border-color:#fff;border-style:solid}
+.scan-frame::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0}
+.scan-frame::after{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
+.scan-corner-tr,.scan-corner-bl{position:absolute;width:20px;height:20px;border-color:#fff;border-style:solid}
+.scan-corner-tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0}
+.scan-corner-bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:scanmove 1.8s ease-in-out infinite;top:0}
+@keyframes scanmove{0%,100%{top:8px;opacity:.7}50%{top:calc(100% - 10px);opacity:1}}
+.scan-hint{color:rgba(255,255,255,.6);font-size:13px;font-family:var(--sans)}
+.manual-row{padding:12px 16px;padding-bottom:calc(env(safe-area-inset-bottom,0) + 12px);display:flex;gap:8px;background:rgba(0,0,0,.8)}
+.manual-row input{flex:1;padding:11px 14px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-family:var(--sans)}
+.manual-row input::placeholder{color:rgba(255,255,255,.3)}
+.manual-row input:focus{outline:none;border-color:var(--green)}
+.manual-row button{padding:11px 16px;border-radius:var(--r-sm);border:none;background:var(--green);color:#000;font-size:14px;font-weight:700;font-family:var(--sans);cursor:pointer;white-space:nowrap}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0) + 76px);left:16px;right:16px;max-width:calc(430px - 32px);margin:0 auto;background:var(--surface3);color:var(--text);padding:13px 16px;border-radius:var(--r-sm);font-size:13px;display:flex;align-items:center;gap:10px;transform:translateY(16px);opacity:0;transition:all .25s;pointer-events:none;z-index:300;border:1px solid var(--border2)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast svg{width:16px;height:16px;flex-shrink:0}
+.toast.ok svg{stroke:var(--green)}
+.toast.err svg{stroke:var(--red)}
 </style>
+</head>
+<body>
 
-<h2 class="sr-only">แอปสแกนบาร์โค้ดสต็อกสินค้า เชื่อมต่อ Google Sheet</h2>
-
-<div class="app">
-  <div class="header">
-    <div class="header-icon"><i class="ti ti-scan" aria-hidden="true"></i></div>
-    <div class="header-text">
-      <h2>Stock Scanner</h2>
-      <p>SAP Warehouse → Google Sheet</p>
-    </div>
-    <div style="margin-left:auto">
-      <span class="badge badge-green" id="conn-badge"><i class="ti ti-circle-filled" style="font-size:8px"></i> พร้อม</span>
-    </div>
-  </div>
-
-  <div class="step-tabs">
-    <button class="step-tab active" onclick="setTab('scan')"><i class="ti ti-scan" aria-hidden="true"></i> สแกน</button>
-    <button class="step-tab" onclick="setTab('batch')"><i class="ti ti-list-check" aria-hidden="true"></i> รายการ <span class="count-pill" id="batch-count">0</span></button>
-    <button class="step-tab" onclick="setTab('settings')"><i class="ti ti-settings" aria-hidden="true"></i> ตั้งค่า</button>
-  </div>
-
-  <div id="tab-scan">
-    <div class="card">
-      <div class="card-label">สแกนบาร์โค้ด</div>
-      <div class="scan-box" onclick="simulateScan()">
-        <i class="ti ti-barcode" aria-hidden="true"></i>
-        <p>แตะเพื่อสแกน</p>
+<div class="shell">
+  <!-- Header -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
       </div>
-      <div class="barcode-result" id="scan-result" style="display:none">
-        <div>
-          <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:2px">Material Code</div>
-          <div class="barcode-value" id="scanned-code">—</div>
-        </div>
-        <span class="badge badge-green"><i class="ti ti-check" style="font-size:10px"></i> สแกนแล้ว</span>
+      <div>
+        <div class="topbar-title">Stock Scanner</div>
+        <div class="topbar-sub">SAP Warehouse → Google Sheet</div>
       </div>
     </div>
+    <div class="status-dot"><div class="dot"></div>พร้อม</div>
+  </div>
 
-    <div class="card" id="form-card" style="display:none">
-      <div class="card-label">รายละเอียด</div>
-      <div class="field-row">
-        <div class="field">
-          <label>Storage Location</label>
-          <select id="loc">
-            <option>WH-01</option><option>WH-02</option><option>WH-03</option><option>WH-04</option>
-          </select>
+  <!-- Pages -->
+  <div class="pages">
+
+    <!-- SCAN PAGE -->
+    <div class="page active" id="page-scan">
+      <div class="card">
+        <div class="card-title">สแกนบาร์โค้ด</div>
+        <button class="scan-trigger" onclick="openCamera()">
+          <div class="scan-area">
+            <div class="scan-area-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
+            </div>
+            <div class="scan-area-label">แตะเพื่อเปิดกล้อง</div>
+            <div class="scan-area-sub">หรือพิมพ์รหัสเองในหน้ากล้อง</div>
+          </div>
+        </button>
+        <div class="result-bar" id="result-bar">
+          <div>
+            <div style="font-size:10px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">Material Code</div>
+            <div class="result-code" id="result-code">—</div>
+          </div>
+          <span class="chip chip-green">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            สแกนแล้ว
+          </span>
+        </div>
+      </div>
+
+      <div class="card" id="detail-card" style="display:none">
+        <div class="card-title">รายละเอียด</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Location</label>
+            <select id="loc"><option>WH-01</option><option>WH-02</option><option>WH-03</option><option>WH-04</option></select>
+          </div>
+          <div class="field">
+            <label>Batch No.</label>
+            <input type="text" id="batch-no" placeholder="BT2405001">
+          </div>
         </div>
         <div class="field">
-          <label>Batch No.</label>
-          <input type="text" id="batch-no" placeholder="เช่น BT2405001">
-        </div>
-        <div class="field full">
           <label>จำนวน (Quantity)</label>
-          <div class="qty-row">
+          <div class="qty-wrap">
             <button class="qty-btn" onclick="changeQty(-1)">−</button>
-            <input type="number" class="qty-input" id="qty" value="1" min="1">
+            <input type="number" class="qty-input field input" id="qty" value="1" min="1">
             <button class="qty-btn" onclick="changeQty(1)">+</button>
-            <span class="qty-unit">EA</span>
+            <span style="font-size:12px;color:var(--text3);margin-left:2px">EA</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <button class="btn btn-green" onclick="addToBatch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+          เพิ่มเข้า Batch
+        </button>
+        <button class="btn btn-outline" onclick="sendSingle()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          ส่ง Sheet ทันที
+        </button>
+      </div>
+    </div>
+
+    <!-- BATCH PAGE -->
+    <div class="page" id="page-batch">
+      <div class="summary-row">
+        <div class="stat-card">
+          <div class="stat-num" id="s-count">0</div>
+          <div class="stat-label">รายการรอส่ง</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="s-qty">0</div>
+          <div class="stat-label">จำนวนรวม (EA)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div id="batch-list-wrap">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            <p style="font-size:14px;margin-bottom:4px">ยังไม่มีรายการ</p>
+            <p style="font-size:12px">กลับไปสแกนสินค้าก่อน</p>
           </div>
         </div>
       </div>
-      <hr class="divider">
-      <button class="btn-primary" onclick="addToBatch()">
-        <i class="ti ti-plus" aria-hidden="true"></i> เพิ่มเข้ารายการ Batch
+      <button class="btn btn-green" id="send-batch-btn" onclick="sendBatch()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        ส่งทั้งหมดไป Google Sheet
       </button>
-      <button class="btn-secondary" onclick="sendSingle()">
-        <i class="ti ti-send" aria-hidden="true"></i> ส่ง Google Sheet ทันที
+      <button class="btn btn-danger" onclick="clearBatch()" style="margin-top:6px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        ล้างรายการทั้งหมด
       </button>
     </div>
-  </div>
 
-  <div id="tab-batch" style="display:none">
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="card-label" style="margin-bottom:0">รายการที่รอส่ง</div>
-        <span class="count-pill" id="batch-count2">0 รายการ</span>
-      </div>
-      <div class="batch-list" id="batch-list">
-        <div style="text-align:center;padding:20px;color:var(--color-text-tertiary);font-size:13px">
-          <i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>
-          ยังไม่มีรายการ
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div class="card">
+        <div class="card-title">Google Apps Script URL</div>
+        <div class="url-box" id="url-display">ยังไม่ได้ตั้งค่า</div>
+        <div class="field">
+          <label>เปลี่ยน URL</label>
+          <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px">
         </div>
+        <button class="btn btn-green" onclick="saveUrl()" style="margin-top:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          บันทึก URL
+        </button>
       </div>
-    </div>
-    <button class="btn-primary" id="send-batch-btn" onclick="sendBatch()" style="margin-top:0" disabled>
-      <i class="ti ti-cloud-upload" aria-hidden="true"></i> ส่งทั้งหมดไป Google Sheet
-    </button>
-    <button class="btn-secondary" onclick="clearBatch()">
-      <i class="ti ti-trash" aria-hidden="true"></i> ล้างรายการทั้งหมด
-    </button>
-  </div>
 
-  <div id="tab-settings" style="display:none">
-    <div class="card">
-      <div class="card-label">เชื่อมต่อ Google Sheet</div>
-      <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">วาง URL ของ Google Apps Script Web App (Deployment URL)</p>
-      <div class="sheet-url-row">
-        <input type="text" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec">
-        <button onclick="saveUrl()"><i class="ti ti-check" aria-hidden="true"></i> บันทึก</button>
-      </div>
-      <div style="margin-top:12px;padding:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)">
-        <p style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px"><i class="ti ti-info-circle" aria-hidden="true"></i> วิธีเชื่อม Google Sheet</p>
-        <ol style="font-size:12px;color:var(--color-text-secondary);padding-left:16px;line-height:1.8">
-          <li>เปิด Google Sheet → Extensions → Apps Script</li>
-          <li>วาง Google Apps Script Code</li>
-          <li>Deploy → New deployment → Web app</li>
-          <li>Copy URL มาใส่ช่องด้านบน</li>
-        </ol>
-      </div>
-      <button class="btn-secondary" style="margin-top:8px" onclick="sendPrompt('ขอ Google Apps Script Code สำหรับรับข้อมูลจากแอปสแกนบาร์โค้ดและบันทึกลง Google Sheet ↗')">
-        <i class="ti ti-code" aria-hidden="true"></i> ขอ Script Code ↗
-      </button>
-    </div>
-    <div class="card">
-      <div class="card-label">ข้อมูลเริ่มต้น</div>
-      <div class="field-row">
-        <div class="field full">
-          <label>ผู้สแกน (User)</label>
-          <input type="text" id="user-name" placeholder="ชื่อพนักงาน">
+      <div class="card">
+        <div class="card-title">ข้อมูลพนักงาน</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>ชื่อผู้สแกน</label>
+          <input type="text" id="s-user" placeholder="ชื่อ-นามสกุล">
         </div>
-        <div class="field full">
+        <div class="field">
           <label>Plant / โรงงาน</label>
-          <input type="text" id="plant" placeholder="เช่น PLANT-01">
+          <input type="text" id="s-plant" placeholder="เช่น PLANT-01">
+        </div>
+        <button class="btn btn-green" onclick="saveSettings()" style="margin-top:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+          บันทึกการตั้งค่า
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Add to Home Screen</div>
+        <div class="info-box">
+          <div class="info-step">
+            <div class="info-step-num">1</div>
+            <p><strong style="color:var(--text)">iPhone (Safari):</strong> กด Share → Add to Home Screen → Add</p>
+          </div>
+          <div class="info-step">
+            <div class="info-step-num">2</div>
+            <p><strong style="color:var(--text)">Android (Chrome):</strong> กด ⋮ → Add to Home screen → Add</p>
+          </div>
         </div>
       </div>
-      <button class="btn-primary" onclick="saveSettings()" style="margin-top:8px">
-        <i class="ti ti-device-floppy" aria-hidden="true"></i> บันทึกการตั้งค่า
-      </button>
     </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="setPage('scan',this)" id="nav-scan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
+      สแกน
+    </button>
+    <button class="nav-item" onclick="setPage('batch',this)" style="position:relative">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 12h6M9 16h4"/></svg>
+      Batch
+      <span class="nav-badge" id="nav-badge">0</span>
+    </button>
+    <button class="nav-item" onclick="setPage('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      ตั้งค่า
+    </button>
+  </nav>
+</div>
+
+<!-- Camera Modal -->
+<div class="modal" id="camera-modal">
+  <div class="modal-top">
+    <span>สแกนบาร์โค้ด</span>
+    <button class="close-modal" onclick="closeCamera()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="video-wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="scan-overlay">
+      <div class="scan-frame">
+        <div class="scan-line"></div>
+        <div class="scan-corner-tr"></div>
+        <div class="scan-corner-bl"></div>
+      </div>
+      <div class="scan-hint">จ่อบาร์โค้ดในกรอบ</div>
+    </div>
+  </div>
+  <div class="manual-row">
+    <input type="text" id="manual-code" placeholder="พิมพ์รหัสเองถ้ากล้องไม่ได้" autocomplete="off">
+    <button onclick="confirmManual()">ยืนยัน</button>
   </div>
 </div>
 
-<div class="toast" id="toast"><i class="ti ti-check"></i> <span id="toast-msg"></span></div>
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="toast-icon"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
 
 <script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwWfhGVbPwIFBs-d7eJiprOGJ9tlPnOMYo3LLhfUIwCG-Zytf4pmwR8n3_4BCJNUUVM/exec";
 let batchItems = [];
 let scannedCode = '';
-let gasUrl = '';
-const codes = ['MAT-10045','MAT-20312','MAT-30087','MAT-40156','MAT-50023'];
-let codeIdx = 0;
+let codeReader = null;
 
-function setTab(t) {
-  ['scan','batch','settings'].forEach(x => {
-    document.getElementById('tab-'+x).style.display = x===t?'block':'none';
-  });
-  document.querySelectorAll('.step-tab').forEach((el,i) => {
-    el.classList.toggle('active', ['scan','batch','settings'][i]===t);
-  });
+window.addEventListener('DOMContentLoaded', () => {
+  const url = localStorage.getItem('gasUrl') || GAS_URL;
+  document.getElementById('url-display').textContent = url;
+  document.getElementById('gas-url-input').value = url;
+  document.getElementById('s-user').value = localStorage.getItem('userName') || '';
+  document.getElementById('s-plant').value = localStorage.getItem('plant') || '';
+});
+
+function setPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
 }
 
-function simulateScan() {
-  scannedCode = codes[codeIdx % codes.length];
-  codeIdx++;
-  document.getElementById('scanned-code').textContent = scannedCode;
-  document.getElementById('scan-result').style.display = 'flex';
-  document.getElementById('form-card').style.display = 'block';
+async function openCamera() {
+  document.getElementById('camera-modal').classList.add('open');
+  document.getElementById('manual-code').value = '';
+  try {
+    const ZXing = window.ZXing;
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+    codeReader.decodeFromVideoElement(video, (result) => {
+      if (result) onScanSuccess(result.getText());
+    });
+  } catch(e) {
+    showToast('ไม่สามารถเปิดกล้องได้', 'err');
+  }
+}
+
+function closeCamera() {
+  document.getElementById('camera-modal').classList.remove('open');
+  if (codeReader) { try { codeReader.reset(); } catch(e){} codeReader = null; }
+  const video = document.getElementById('video');
+  if (video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.srcObject = null; }
+}
+
+function onScanSuccess(code) {
+  closeCamera();
+  scannedCode = code.trim();
+  document.getElementById('result-code').textContent = scannedCode;
+  document.getElementById('result-bar').style.display = 'flex';
+  document.getElementById('detail-card').style.display = 'block';
   document.getElementById('qty').value = 1;
   document.getElementById('batch-no').value = '';
+  showToast('สแกนสำเร็จ: ' + scannedCode, 'ok');
+}
+
+function confirmManual() {
+  const code = document.getElementById('manual-code').value.trim();
+  if (code) onScanSuccess(code);
 }
 
 function changeQty(d) {
   const el = document.getElementById('qty');
-  el.value = Math.max(1, parseInt(el.value||1) + d);
+  el.value = Math.max(1, parseInt(el.value || 1) + d);
 }
 
 function getRow() {
   return {
-    timestamp: new Date().toLocaleString('th-TH'),
     material: scannedCode,
     location: document.getElementById('loc').value,
     batch: document.getElementById('batch-no').value || '-',
-    qty: parseInt(document.getElementById('qty').value),
-    user: document.getElementById('user-name')?.value || '-',
-    plant: document.getElementById('plant')?.value || '-'
+    qty: parseInt(document.getElementById('qty').value) || 1,
+    unit: 'EA',
+    plant: localStorage.getItem('plant') || '',
+    user: localStorage.getItem('userName') || ''
   };
 }
 
@@ -235,89 +462,103 @@ function addToBatch() {
   if (!scannedCode) return;
   batchItems.push(getRow());
   updateBatchUI();
-  showToast('เพิ่มเข้า Batch แล้ว (' + batchItems.length + ' รายการ)');
-  document.getElementById('scan-result').style.display = 'none';
-  document.getElementById('form-card').style.display = 'none';
+  showToast('เพิ่มเข้า Batch แล้ว (' + batchItems.length + ' รายการ)', 'ok');
+  document.getElementById('result-bar').style.display = 'none';
+  document.getElementById('detail-card').style.display = 'none';
   scannedCode = '';
+}
+
+function removeItem(i) { batchItems.splice(i, 1); updateBatchUI(); }
+
+function clearBatch() {
+  if (!batchItems.length) return;
+  if (!confirm('ต้องการล้างรายการทั้งหมด?')) return;
+  batchItems = []; updateBatchUI(); showToast('ล้างรายการแล้ว');
 }
 
 function updateBatchUI() {
   const count = batchItems.length;
-  document.getElementById('batch-count').textContent = count;
-  document.getElementById('batch-count2').textContent = count + ' รายการ';
+  const totalQty = batchItems.reduce((s, r) => s + (r.qty || 0), 0);
+  document.getElementById('s-count').textContent = count;
+  document.getElementById('s-qty').textContent = totalQty;
   document.getElementById('send-batch-btn').disabled = count === 0;
-  const list = document.getElementById('batch-list');
-  if (count === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--color-text-tertiary);font-size:13px"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px"></i>ยังไม่มีรายการ</div>';
+  const badge = document.getElementById('nav-badge');
+  badge.style.display = count > 0 ? 'block' : 'none';
+  badge.textContent = count;
+  const wrap = document.getElementById('batch-list-wrap');
+  if (!count) {
+    wrap.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto;width:40px;height:40px"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><p style="font-size:14px;margin-bottom:4px">ยังไม่มีรายการ</p><p style="font-size:12px">กลับไปสแกนสินค้าก่อน</p></div>`;
     return;
   }
-  list.innerHTML = batchItems.map((item, i) =>
+  wrap.innerHTML = `<div class="batch-list">` + batchItems.map((item, i) =>
     `<div class="batch-item">
-      <div class="batch-num">${i+1}</div>
+      <div class="batch-num-circle">${i+1}</div>
       <div class="batch-info">
         <div class="batch-code">${item.material}</div>
         <div class="batch-meta">${item.location} · Batch: ${item.batch}</div>
       </div>
-      <div class="batch-qty">${item.qty} EA</div>
-      <button class="batch-del" onclick="removeItem(${i})" aria-label="ลบ"><i class="ti ti-x" style="font-size:14px"></i></button>
+      <div class="batch-qty-badge">${item.qty} EA</div>
+      <button class="del-btn" onclick="removeItem(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>`
-  ).join('');
+  ).join('') + `</div>`;
 }
 
-function removeItem(i) {
-  batchItems.splice(i, 1);
-  updateBatchUI();
-}
-
-function clearBatch() {
-  if (batchItems.length === 0) return;
-  batchItems = [];
-  updateBatchUI();
-  showToast('ล้างรายการแล้ว');
-}
+function getUrl() { return localStorage.getItem('gasUrl') || GAS_URL; }
 
 async function sendToSheet(rows) {
-  const url = gasUrl || localStorage.getItem('gasUrl');
-  if (!url) { showToast('⚠️ ยังไม่ได้ตั้งค่า URL ของ Sheet'); setTab('settings'); return false; }
-  try {
-    await fetch(url, { method:'POST', mode:'no-cors', body: JSON.stringify({rows}) });
-    return true;
-  } catch(e) { return false; }
+  await fetch(getUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows }) });
+  return true;
 }
 
 async function sendSingle() {
   if (!scannedCode) return;
-  const row = getRow();
-  showToast('กำลังส่ง...');
-  const ok = await sendToSheet([row]);
-  showToast(ok ? '✓ ส่ง Google Sheet สำเร็จ' : '✓ ส่งแล้ว (no-cors mode)');
-  document.getElementById('scan-result').style.display = 'none';
-  document.getElementById('form-card').style.display = 'none';
-  scannedCode = '';
+  showToast('กำลังส่งไป Google Sheet...');
+  try {
+    await sendToSheet([getRow()]);
+    showToast('ส่งสำเร็จ! บันทึกลง Sheet แล้ว', 'ok');
+    document.getElementById('result-bar').style.display = 'none';
+    document.getElementById('detail-card').style.display = 'none';
+    scannedCode = '';
+  } catch(e) { showToast('เกิดข้อผิดพลาด ลองใหม่', 'err'); }
 }
 
 async function sendBatch() {
-  if (batchItems.length === 0) return;
-  showToast('กำลังส่ง ' + batchItems.length + ' รายการ...');
-  const ok = await sendToSheet(batchItems);
-  showToast('✓ ส่ง ' + batchItems.length + ' รายการไป Sheet แล้ว');
-  batchItems = [];
-  updateBatchUI();
+  if (!batchItems.length) return;
+  const count = batchItems.length;
+  showToast('กำลังส่ง ' + count + ' รายการ...');
+  try {
+    await sendToSheet([...batchItems]);
+    showToast('ส่ง ' + count + ' รายการลง Sheet สำเร็จ!', 'ok');
+    batchItems = []; updateBatchUI();
+  } catch(e) { showToast('เกิดข้อผิดพลาด ลองใหม่', 'err'); }
 }
 
 function saveUrl() {
-  gasUrl = document.getElementById('gas-url').value;
-  localStorage.setItem('gasUrl', gasUrl);
-  showToast('บันทึก URL แล้ว');
-  document.getElementById('conn-badge').innerHTML = '<i class="ti ti-circle-filled" style="font-size:8px"></i> เชื่อมแล้ว';
+  const url = document.getElementById('gas-url-input').value.trim();
+  if (!url) return;
+  localStorage.setItem('gasUrl', url);
+  document.getElementById('url-display').textContent = url;
+  showToast('บันทึก URL แล้ว', 'ok');
 }
 
-function saveSettings() { showToast('บันทึกการตั้งค่าแล้ว'); }
+function saveSettings() {
+  localStorage.setItem('userName', document.getElementById('s-user').value);
+  localStorage.setItem('plant', document.getElementById('s-plant').value);
+  showToast('บันทึกการตั้งค่าแล้ว', 'ok');
+}
 
-function showToast(msg) {
+let toastTimer;
+function showToast(msg, type) {
   const t = document.getElementById('toast');
+  const icon = document.getElementById('toast-icon');
   document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  icon.innerHTML = type === 'err'
+    ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+    : '<polyline points="20 6 9 17 4 12"/>';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 </script>
+</body>
+</html>

@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Stock System">
+<meta name="theme-color" content="#f5f7fa">
+<title>Stock System</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@zxing/library@0.21.0/umd/index.min.js"></script>
+<style>
+:root{--bg:#f5f7fa;--s1:#ffffff;--s2:#f0f3f7;--s3:#e4e9f0;--bd:rgba(0,0,0,0.08);--bd2:rgba(0,0,0,0.14);--green:#00b35a;--gbg:rgba(0,179,90,0.08);--gbg2:rgba(0,179,90,0.15);--red:#e53935;--rbg:rgba(229,57,53,0.08);--rbg2:rgba(229,57,53,0.15);--blue:#1976d2;--bbg:rgba(25,118,210,0.08);--amber:#f57c00;--abg:rgba(245,124,0,0.08);--text:#1a1a1a;--t2:#666;--t3:#999;--r:14px;--rsm:8px;--mono:'IBM Plex Mono',monospace;--sans:'Noto Sans Thai',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--bg);color:var(--text)}
+.shell{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:430px;margin:0 auto}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 24px;gap:18px}
+.w-logo{width:72px;height:72px;border-radius:20px;background:var(--gbg2);border:1px solid rgba(0,179,90,.3);display:flex;align-items:center;justify-content:center}
+.w-logo svg{width:36px;height:36px;stroke:var(--green)}
+.w-title{font-size:22px;font-weight:700;text-align:center}
+.w-sub{font-size:13px;color:var(--t2);text-align:center;line-height:1.6}
+.w-card{width:100%;max-width:320px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.w-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;text-align:center}
+.user-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.user-pick{padding:14px 8px;border-radius:var(--rsm);border:1.5px solid var(--bd2);background:#fff;color:var(--text);font-size:14px;font-weight:600;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.user-pick:active{transform:scale(.97);background:var(--gbg2);border-color:var(--green);color:var(--green)}
+.user-pick svg{width:16px;height:16px;opacity:.6}
+.topbar{padding:env(safe-area-inset-top,14px) 16px 12px;background:var(--s1);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bd);box-shadow:0 1px 3px rgba(0,0,0,0.03)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--gbg2);border:1px solid rgba(0,179,90,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--green)}
+.uname{font-size:13px;font-weight:600;flex:1}
+.udot{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--green)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.icon-btn-sm{width:30px;height:30px;border-radius:50%;border:1px solid var(--bd2);background:none;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.icon-btn-sm svg{width:16px;height:16px}
+.mode-bar{display:flex;margin:12px 16px 0;gap:8px}
+.mode-btn{flex:1;padding:12px;border-radius:var(--rsm);border:1.5px solid var(--bd2);background:#fff;color:var(--t2);font-size:14px;font-weight:600;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.mode-btn svg{width:18px;height:18px;stroke-width:2.5}
+.mode-btn.in.active{background:var(--gbg2);border-color:var(--green);color:var(--green)}
+.mode-btn.out.active{background:var(--rbg2);border-color:var(--red);color:var(--red)}
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;padding:12px 16px 16px;display:none}
+.page.active{display:block}
+.page::-webkit-scrollbar{display:none}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.card-title{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.card-title-left{display:flex;align-items:center}
+.sn{background:var(--green);color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-right:8px}
+.sn.out{background:var(--red)}
+.input-hint{font-size:9px;color:var(--t3);text-transform:none;letter-spacing:normal;font-weight:400}
+.scan-row{display:flex;gap:6px}
+.code-input{flex:1;padding:12px 14px;border:1.5px solid var(--bd2);border-radius:var(--rsm);background:#fff;color:var(--text);font-size:16px;font-family:var(--mono);font-weight:600;outline:none;min-height:50px}
+.code-input:focus{border-color:var(--green);box-shadow:0 0 0 2px var(--gbg)}
+.code-input.out:focus{border-color:var(--red);box-shadow:0 0 0 2px var(--rbg)}
+.code-input::placeholder{font-family:var(--sans);color:var(--t3);font-size:13px;font-weight:400}
+.code-input.has-value{color:var(--green)}
+.code-input.has-value.out-mode{color:var(--red)}
+.scn-btn{width:50px;border-radius:var(--rsm);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.scn-btn.in{background:var(--green);color:#fff}
+.scn-btn.out{background:var(--red);color:#fff}
+.scn-btn:active{transform:scale(.95)}
+.scn-btn svg{width:24px;height:24px;stroke-width:2}
+.clr-btn{width:34px;border-radius:var(--rsm);border:1px solid var(--bd2);background:none;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.clr-btn svg{width:14px;height:14px}
+.info-card{border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.info-card.in{background:linear-gradient(135deg,rgba(0,179,90,.07),rgba(0,179,90,.02));border:1px solid rgba(0,179,90,.25)}
+.info-card.out{background:linear-gradient(135deg,rgba(229,57,53,.07),rgba(229,57,53,.02));border:1px solid rgba(229,57,53,.25)}
+.info-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:10px}
+.remain-num{font-size:34px;font-weight:700;font-family:var(--mono);line-height:1}
+.info-meta{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12px;padding-top:10px;border-top:1px solid var(--bd2)}
+.ml{color:var(--t3)}
+.mv{color:var(--text);font-weight:500;word-break:break-word}
+.mv.mono{font-family:var(--mono)}
+/* Zone display — เด่นตอนจ่ายออก */
+.zone-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px solid var(--amber);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.zone-banner svg{width:34px;height:34px;stroke:var(--amber);flex-shrink:0}
+.zone-banner-label{font-size:10px;color:#bf6000;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.zone-banner-val{font-size:26px;font-weight:700;color:#e65100;font-family:var(--mono);line-height:1.1;word-break:break-word}
+.zone-empty{font-size:16px;color:#bf6000;font-style:italic}
+/* Zone input row */
+.zone-input{flex:1;padding:12px 14px;border:1.5px solid var(--bd2);border-radius:var(--rsm);background:#fff;color:var(--text);font-size:15px;font-family:var(--sans);outline:none;min-height:48px}
+.zone-input:focus{border-color:var(--green);box-shadow:0 0 0 2px var(--gbg)}
+.zone-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.zone-chip{padding:6px 12px;border-radius:16px;border:1px solid var(--bd2);background:#fff;color:var(--t2);font-size:12px;font-family:var(--mono);cursor:pointer}
+.zone-chip:active{background:var(--gbg2);border-color:var(--green);color:var(--green)}
+.qty-row{display:flex;align-items:center;gap:8px}
+.qbtn{width:46px;height:46px;border-radius:var(--rsm);border:1px solid var(--bd2);background:#fff;color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qinput{flex:1;padding:10px;text-align:center;font-size:24px;font-weight:700;font-family:var(--mono);color:var(--text);border:1px solid var(--bd2);border-radius:var(--rsm);background:#fff;outline:none}
+.qinput.out:focus{border-color:var(--red)}
+.qinput:focus{border-color:var(--green)}
+.qunit{font-size:13px;color:var(--t3);min-width:28px}
+.qquick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.qq{padding:8px;border-radius:var(--rsm);border:1px solid var(--bd2);background:#fff;color:var(--t2);font-size:13px;font-family:var(--mono);font-weight:600;cursor:pointer}
+.qq:active{background:var(--green);color:#fff;border-color:var(--green)}
+.qq.out:active{background:var(--red);color:#fff;border-color:var(--red)}
+.alert{padding:9px 12px;border-radius:var(--rsm);font-size:12px;display:flex;align-items:flex-start;gap:7px;line-height:1.5;margin-top:6px}
+.alert svg{width:14px;height:14px;flex-shrink:0;margin-top:1px}
+.a-warn{background:var(--abg);color:var(--amber);border:1px solid rgba(245,124,0,.25)}
+.a-err{background:var(--rbg);color:var(--red);border:1px solid rgba(229,57,53,.25)}
+.btn{width:100%;padding:14px;border-radius:var(--rsm);border:none;font-size:15px;font-weight:700;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+.btn:active{transform:scale(.98)}
+.btn-in{background:var(--green);color:#fff}
+.btn-out{background:var(--red);color:#fff}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--bd2)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn svg{width:18px;height:18px;stroke-width:2.5}
+.bnav{display:flex;background:var(--s1);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0);box-shadow:0 -2px 8px rgba(0,0,0,0.04)}
+.ni{flex:1;padding:10px 0 8px;border:none;background:none;color:var(--t3);font-size:10px;font-family:var(--sans);display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.ni svg{width:22px;height:22px;stroke-width:1.8}
+.ni.active{color:var(--green)}
+.ni.active svg{stroke:var(--green)}
+.hi{background:#fff;border:1px solid var(--bd);border-radius:var(--rsm);padding:11px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
+.hi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.hi-code{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)}
+.hi-qty{font-family:var(--mono);font-size:14px;font-weight:700}
+.hi-qty.in{color:var(--green)}
+.hi-qty.out{color:var(--red)}
+.hi-name{font-size:11px;color:var(--t2);margin-bottom:3px}
+.hi-meta{font-size:10px;color:var(--t3);display:flex;gap:8px;flex-wrap:wrap}
+.hi-badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.hi-badge.in{background:var(--gbg2);color:var(--green)}
+.hi-badge.out{background:var(--rbg2);color:var(--red)}
+.empty-state{text-align:center;padding:40px 16px;color:var(--t3)}
+.empty-state svg{width:38px;height:38px;margin:0 auto 12px;opacity:.3;display:block}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.sum-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rsm);padding:12px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.sum-num{font-size:22px;font-weight:700;font-family:var(--mono)}
+.sum-lbl{font-size:10px;color:var(--t3);margin-top:3px}
+.user-edit-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.user-edit-row input{flex:1;padding:10px;border:1px solid var(--bd2);border-radius:var(--rsm);background:#fff;color:var(--text);font-size:13px;font-family:var(--sans);outline:none}
+.user-edit-row button{padding:8px 10px;border-radius:var(--rsm);border:none;cursor:pointer;font-size:12px;font-family:var(--sans)}
+.del-user-btn{background:var(--rbg);color:var(--red)}
+.modal{display:none;position:fixed;inset:0;z-index:200;background:#000;flex-direction:column;max-width:430px;margin:0 auto}
+.modal.open{display:flex}
+.mtop{padding:env(safe-area-inset-top,16px) 16px 12px;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.6);z-index:2}
+.mtop span{color:#fff;font-size:16px;font-weight:700;flex:1}
+.xcam{width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.xcam svg{width:18px;height:18px;stroke-width:2.5}
+.vwrap{flex:1;position:relative;overflow:hidden;background:#000}
+#video{width:100%;height:100%;object-fit:cover;display:block}
+.soverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;pointer-events:none}
+.sframe{width:85%;max-width:320px;height:190px;position:relative}
+.sframe::before{content:'';position:absolute;inset:0;box-shadow:0 0 0 9999px rgba(0,0,0,.55)}
+.sc{position:absolute;width:22px;height:22px;border-style:solid}
+.sc.in{border-color:var(--green)}
+.sc.out{border-color:var(--red)}
+.sc.tl{top:0;left:0;border-width:3px 0 0 3px}
+.sc.tr{top:0;right:0;border-width:3px 3px 0 0}
+.sc.bl{bottom:0;left:0;border-width:0 0 3px 3px}
+.sc.br{bottom:0;right:0;border-width:0 3px 3px 0}
+.sline{position:absolute;left:6px;right:6px;height:2px;animation:sl 2s ease-in-out infinite;top:0}
+.sline.in{background:linear-gradient(90deg,transparent,#00e676 20%,#00e676 80%,transparent);box-shadow:0 0 8px #00e676}
+.sline.out{background:linear-gradient(90deg,transparent,#ff5252 20%,#ff5252 80%,transparent);box-shadow:0 0 8px #ff5252}
+@keyframes sl{0%,100%{top:8px}50%{top:calc(100% - 10px)}}
+.slabel{position:absolute;top:72px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:600;background:rgba(0,0,0,.7);padding:5px 14px;border-radius:12px;border:1px solid;white-space:nowrap}
+.slabel.in{color:#00e676;border-color:rgba(0,230,118,.4)}
+.slabel.out{color:#ff5252;border-color:rgba(255,82,82,.4)}
+.shint{color:#fff;font-size:13px;background:rgba(0,0,0,.6);padding:6px 14px;border-radius:20px}
+.torch{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.6);color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:3;pointer-events:auto}
+.torch.show{display:flex}
+.torch.on{background:#00e676;color:#000}
+.torch svg{width:22px;height:22px;stroke-width:2}
+.mrow{padding:12px 16px;padding-bottom:calc(env(safe-area-inset-bottom,0) + 12px);display:flex;gap:8px;background:rgba(0,0,0,.85);z-index:3}
+.mrow input{flex:1;padding:11px 14px;border-radius:var(--rsm);border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-family:var(--sans)}
+.mrow button{padding:11px 16px;border-radius:var(--rsm);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.mrow button.in{background:var(--green)}
+.mrow button.out{background:var(--red)}
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0)+72px);left:16px;right:16px;max-width:calc(430px - 32px);margin:0 auto;background:#1a1a1a;color:#fff;padding:12px 16px;border-radius:var(--rsm);font-size:13px;display:flex;align-items:center;gap:10px;transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast svg{width:16px;height:16px;flex-shrink:0}
+.toast.ok svg{stroke:#00e676}
+.toast.err svg{stroke:#ff5252}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tip-row{background:linear-gradient(135deg,rgba(25,118,210,.07),rgba(25,118,210,.02));border:1px solid rgba(25,118,210,.2);border-radius:var(--rsm);padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--blue);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.tip-row svg{width:14px;height:14px;flex-shrink:0;margin-top:1px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="welcome" id="welcome">
+  <div class="w-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg></div>
+  <div style="text-align:center"><div class="w-title">Stock System</div><div class="w-sub">ระบบรับ-จ่ายสต็อกสินค้า<br>SAP Warehouse</div><div id="welcome-version" style="font-size:11px;color:var(--green);font-family:var(--mono);margin-top:4px;font-weight:600">—</div></div>
+  <div class="w-card">
+    <div class="w-label">เลือกชื่อผู้ใช้งาน</div>
+    <div class="user-grid" id="user-grid"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+  <div class="topbar">
+    <div class="avatar" id="avatar">?</div>
+    <div class="uname" id="uname">—</div>
+    <div class="udot"><div class="dot"></div>พร้อม</div>
+    <button class="icon-btn-sm" onclick="changeUser()" title="เปลี่ยนผู้ใช้"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+  </div>
+
+  <div class="mode-bar">
+    <button class="mode-btn in active" id="btn-in" onclick="setMode('in')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20"/><path d="M17 7l-5-5-5 5"/></svg>รับเข้า</button>
+    <button class="mode-btn out" id="btn-out" onclick="setMode('out')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20"/><path d="M7 17l5 5 5-5"/></svg>จ่ายออก</button>
+  </div>
+
+  <div class="pages">
+    <div class="page active" id="page-main">
+
+      <div class="tip-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span><b>เคล็ดลับ:</b> สแกน DocuNo อย่างเดียว → ระบบหาสินค้าให้ทันที (ใช้ปืนสแกน + Enter หรือกล้อง 📷)</span>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-left"><span class="sn" id="sn1">1</span>DocuNo — เลขที่เอกสาร</div><span class="input-hint">ปืน + Enter / กล้อง →</span></div>
+        <div class="scan-row">
+          <input type="text" class="code-input" id="docuno-inp" placeholder="สแกนปืนหรือพิมพ์ DocuNo" autocomplete="off" inputmode="text">
+          <button class="clr-btn" onclick="clrDocuno()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          <button class="scn-btn in" id="scn-docuno" onclick="openCam()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+        </div>
+        <button class="btn btn-in" id="check-btn" onclick="checkStock()" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>ค้นหาสินค้า</button>
+      </div>
+
+      <!-- Zone banner (จ่ายออก แสดงเด่น) -->
+      <div id="zone-banner-wrap"></div>
+
+      <!-- Stock info -->
+      <div id="stock-info-wrap"></div>
+
+      <!-- Zone input (รับเข้าเท่านั้น) -->
+      <div class="card" id="zone-card" style="display:none">
+        <div class="card-title"><div class="card-title-left"><span class="sn" id="sn-zone">2</span>Zone — ตำแหน่งจัดเก็บ</div><span class="input-hint">ไม่บังคับ</span></div>
+        <input type="text" class="zone-input" id="zone-inp" placeholder="เช่น A-12 หรือ ชั้น 3 แถว B (เว้นว่างได้)" autocomplete="off">
+        <div class="zone-chips" id="zone-chips"></div>
+      </div>
+
+      <div class="card" id="qty-card" style="display:none">
+        <div class="card-title"><div class="card-title-left"><span class="sn" id="sn3">3</span>จำนวน</div></div>
+        <div class="qty-row">
+          <button class="qbtn" onclick="adjQty(-1)">−</button>
+          <input type="number" class="qinput" id="qty-inp" value="1" min="1">
+          <button class="qbtn" onclick="adjQty(1)">+</button>
+          <span class="qunit" id="qty-unit">EA</span>
+        </div>
+        <div class="qquick">
+          <button class="qq" onclick="setQty(1)">1</button><button class="qq" onclick="setQty(5)">5</button>
+          <button class="qq" onclick="setQty(10)">10</button><button class="qq" onclick="setQtyMax()">MAX</button>
+        </div>
+        <div id="qty-warn"></div>
+      </div>
+
+      <div id="confirm-wrap" style="display:none">
+        <button class="btn btn-in" id="confirm-btn" onclick="doMove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>ยืนยัน</button>
+        <button class="btn btn-outline" onclick="resetForm()" style="margin-top:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>เริ่มใหม่</button>
+      </div>
+      <div id="lookup-err"></div>
+    </div>
+
+    <div class="page" id="page-history">
+      <div class="sum-grid" id="sum-grid"></div>
+      <div class="card">
+        <div class="card-title"><div class="card-title-left">ประวัติ (เครื่องนี้)</div></div>
+        <div id="hist-wrap"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>ยังไม่มีประวัติ</p></div></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-settings">
+      <div class="card">
+        <div class="card-title"><div class="card-title-left">Google Apps Script URL</div></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--t3);background:var(--s2);padding:8px 10px;border-radius:var(--rsm);word-break:break-all;line-height:1.6;margin-bottom:10px;border:1px solid var(--bd)" id="gas-display">ยังไม่ได้ตั้งค่า</div>
+        <textarea id="gas-input" rows="3" style="width:100%;padding:10px;border:1px solid var(--bd2);border-radius:var(--rsm);background:#fff;color:var(--text);font-size:12px;font-family:var(--mono);resize:none;outline:none" placeholder="https://script.google.com/macros/s/.../exec"></textarea>
+        <button class="btn btn-in" onclick="saveGas()" style="margin-top:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>บันทึก URL</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="card-title-left">รายชื่อผู้ใช้</div></div>
+        <div id="users-edit-list"></div>
+        <div class="user-edit-row" style="margin-top:10px">
+          <input type="text" id="new-user-name" placeholder="เพิ่มชื่อพนักงานใหม่">
+          <button style="background:var(--green);color:#fff;font-weight:700" onclick="addUser()">+ เพิ่ม</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="card-title-left">ข้อมูลเครื่อง</div></div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.8">
+          <div><b style="color:var(--text)">ผู้ใช้ปัจจุบัน:</b> <span id="cur-user">—</span></div>
+          <div><b style="color:var(--text)">ประวัติ:</b> <span id="hist-count">0</span> รายการ</div>
+          <div><b style="color:var(--text)">เวอร์ชันแอป:</b> <span id="app-version" style="color:var(--green);font-family:var(--mono);font-weight:600">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bnav">
+    <button class="ni active" onclick="gotoPage('main',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>สแกน</button>
+    <button class="ni" onclick="gotoPage('history',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>ประวัติ</button>
+    <button class="ni" onclick="gotoPage('settings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>ตั้งค่า</button>
+  </nav>
+</div>
+</div>
+
+<div class="modal" id="cam-modal">
+  <div class="mtop">
+    <span id="cam-title">สแกน DocuNo</span>
+    <button class="xcam" onclick="closeCam()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="vwrap">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="soverlay">
+      <div class="slabel in" id="s-label">DocuNo</div>
+      <div class="sframe">
+        <div class="sline in" id="s-line"></div>
+        <div class="sc in tl" id="sc-tl"></div><div class="sc in tr" id="sc-tr"></div>
+        <div class="sc in bl" id="sc-bl"></div><div class="sc in br" id="sc-br"></div>
+      </div>
+      <div class="shint" id="s-hint">จ่อบาร์โค้ดในกรอบ ระยะ 10-20 ซม.</div>
+    </div>
+    <button class="torch" id="torch-btn" onclick="toggleTorch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2h8l-1 6H9L8 2z"/><path d="M9 8v1a3 3 0 0 0 6 0V8"/><line x1="12" y1="12" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></button>
+  </div>
+  <div class="mrow">
+    <input type="text" id="man-input" placeholder="พิมพ์ DocuNo เองถ้ากล้องไม่ได้" autocomplete="off">
+    <button class="in" id="man-btn" onclick="confirmMan()">ยืนยัน</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="t-icon"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="t-msg"></span>
+</div>
+
+<script>
+const APP_VERSION = 'v3.1 (2026-06-06 fetch-fix)';
+console.log('%c Stock System ' + APP_VERSION, 'background:#00b35a;color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold');
+const DEFAULT_USERS = ['อัครพล', 'พนักงาน A', 'พนักงาน B', 'พนักงาน C', 'พนักงาน D'];
+let users = JSON.parse(localStorage.getItem('users') || JSON.stringify(DEFAULT_USERS));
+let user = localStorage.getItem('currentUser') || '';
+let gasUrl = localStorage.getItem('gasUrl') || '';
+let zoneList = JSON.parse(localStorage.getItem('zoneList') || '[]');
+let mode = 'in';
+let stock = null;
+let hist = JSON.parse(localStorage.getItem('hist') || '[]');
+let camReader = null, stream = null, torchOn = false, lastScan = 0;
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('welcome-version').textContent = APP_VERSION;
+  document.getElementById('app-version').textContent = APP_VERSION;
+  renderUserPicker();
+  if (user && users.includes(user)) showApp();
+  document.getElementById('gas-display').textContent = gasUrl || 'ยังไม่ได้ตั้งค่า';
+  document.getElementById('gas-input').value = gasUrl;
+  setupListeners();
+});
+
+function setupListeners() {
+  const d = document.getElementById('docuno-inp');
+  const q = document.getElementById('qty-inp');
+  d.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkStock(); } });
+  d.addEventListener('input', () => updateInputStyle());
+  q.addEventListener('input', validateQty);
+  q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doMove(); } });
+}
+
+function renderUserPicker() {
+  document.getElementById('user-grid').innerHTML = users.map(u => `<button class="user-pick" onclick="pickUser('${u.replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>${u}</button>`).join('');
+}
+
+function pickUser(name) { user = name; localStorage.setItem('currentUser', name); showApp(); }
+
+function changeUser() {
+  if (!confirm('เปลี่ยนชื่อผู้ใช้?')) return;
+  user = ''; localStorage.removeItem('currentUser');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('welcome').style.display = 'flex';
+  renderUserPicker(); resetForm();
+}
+
+function showApp() {
+  document.getElementById('welcome').style.display = 'none';
+  const a = document.getElementById('app');
+  a.style.display = 'flex'; a.style.flexDirection = 'column';
+  document.getElementById('avatar').textContent = user[0] || '?';
+  document.getElementById('uname').textContent = user;
+  document.getElementById('cur-user').textContent = user;
+  document.getElementById('hist-count').textContent = hist.length;
+  renderUsersEdit();
+  setMode(mode);
+  loadZones();
+}
+
+function renderUsersEdit() {
+  document.getElementById('users-edit-list').innerHTML = users.map((u, i) => `<div class="user-edit-row"><input type="text" value="${u}" onchange="editUser(${i}, this.value)"><button class="del-user-btn" onclick="delUser(${i})">ลบ</button></div>`).join('');
+}
+
+function addUser() {
+  const inp = document.getElementById('new-user-name');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (users.includes(name)) { showToast('มีชื่อนี้แล้ว', 'err'); return; }
+  users.push(name);
+  localStorage.setItem('users', JSON.stringify(users));
+  inp.value = ''; renderUsersEdit();
+  showToast('เพิ่ม ' + name + ' แล้ว', 'ok');
+}
+
+function editUser(i, val) {
+  val = val.trim(); if (!val) return;
+  const old = users[i]; users[i] = val;
+  localStorage.setItem('users', JSON.stringify(users));
+  if (user === old) {
+    user = val; localStorage.setItem('currentUser', val);
+    document.getElementById('uname').textContent = val;
+    document.getElementById('avatar').textContent = val[0];
+    document.getElementById('cur-user').textContent = val;
+  }
+}
+
+function delUser(i) {
+  if (users.length <= 1) { showToast('ต้องมีอย่างน้อย 1 ชื่อ', 'err'); return; }
+  if (!confirm('ลบ ' + users[i] + ' ?')) return;
+  const r = users[i]; users.splice(i, 1);
+  localStorage.setItem('users', JSON.stringify(users));
+  renderUsersEdit();
+  if (user === r) changeUser();
+}
+
+// ── โหลดรายการ Zone จาก GAS (สำหรับ dropdown) ────────────────
+async function loadZones() {
+  if (!gasUrl) return;
+  try {
+    const res = await fetch(`${gasUrl}?action=zones&t=${Date.now()}`, { redirect: 'follow' });
+    const text = await res.text();
+    const json = JSON.parse(text);
+    if (json.status === 'ok' && Array.isArray(json.zones)) {
+      zoneList = json.zones;
+      localStorage.setItem('zoneList', JSON.stringify(zoneList));
+    }
+  } catch(e) {}
+}
+
+function renderZoneChips() {
+  const wrap = document.getElementById('zone-chips');
+  if (!zoneList.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = zoneList.slice(0, 12).map(z =>
+    `<button class="zone-chip" onclick="pickZone('${z.replace(/'/g,"\\'")}')">${z}</button>`).join('');
+}
+
+function pickZone(z) {
+  document.getElementById('zone-inp').value = z;
+}
+
+function setMode(m) {
+  mode = m;
+  const isIn = m === 'in';
+  document.getElementById('btn-in').classList.toggle('active', isIn);
+  document.getElementById('btn-out').classList.toggle('active', !isIn);
+  ['sn1','sn3'].forEach(id => { const e = document.getElementById(id); if(e) e.className = isIn ? 'sn' : 'sn out'; });
+  const snZone = document.getElementById('sn-zone'); if (snZone) snZone.className = 'sn';
+  const sc = document.getElementById('scn-docuno');
+  if (sc) sc.className = isIn ? 'scn-btn in' : 'scn-btn out';
+  const cb = document.getElementById('check-btn');
+  if (cb) cb.className = isIn ? 'btn btn-in' : 'btn btn-out';
+  updateInputStyle();
+  hideInfo();
+}
+
+function updateInputStyle() {
+  const e = document.getElementById('docuno-inp');
+  if (!e) return;
+  const hv = e.value.trim().length > 0;
+  e.classList.toggle('has-value', hv);
+  e.classList.toggle('out-mode', mode === 'out');
+  e.classList.toggle('out', mode === 'out');
+}
+
+function gotoPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'history') renderHist();
+}
+
+function clrDocuno() { document.getElementById('docuno-inp').value = ''; updateInputStyle(); hideInfo(); }
+
+function hideInfo() {
+  document.getElementById('zone-banner-wrap').innerHTML = '';
+  document.getElementById('stock-info-wrap').innerHTML = '';
+  document.getElementById('zone-card').style.display = 'none';
+  document.getElementById('qty-card').style.display = 'none';
+  document.getElementById('confirm-wrap').style.display = 'none';
+  document.getElementById('lookup-err').innerHTML = '';
+  stock = null;
+}
+
+async function checkStock() {
+  const docuno = document.getElementById('docuno-inp').value.trim();
+  if (!docuno) { showToast('กรุณากรอก DocuNo', 'err'); return; }
+  if (!gasUrl) { showToast('ยังไม่ได้ตั้งค่า Apps Script URL', 'err'); return; }
+
+  const btn = document.getElementById('check-btn');
+  btn.innerHTML = '<div class="spinner"></div> กำลังค้นหา...';
+  btn.disabled = true;
+  hideInfo();
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const url = `${gasUrl}?action=lookup&docuno=${encodeURIComponent(docuno)}&t=${Date.now()}`;
+    const res  = await fetch(url, { method: 'GET', redirect: 'follow', signal: ctrl.signal });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); }
+    catch(parseErr) { showToast('อ่านข้อมูลไม่ได้ ลองใหม่', 'err'); console.log('Raw:', text.slice(0,300)); return; }
+    if (json.status === 'ok' && json.data && json.data.found) {
+      stock = json.data;
+      renderStockInfo(stock);
+    } else {
+      document.getElementById('lookup-err').innerHTML = `<div class="alert a-err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>ไม่พบ DocuNo <b>${docuno}</b> ใน Stock</span></div>`;
+      showToast('ไม่พบรายการ', 'err');
+    }
+  } catch(e) {
+    if (e.name === 'AbortError') showToast('หมดเวลา (เน็ตช้า) ลองใหม่', 'err');
+    else showToast('เกิดข้อผิดพลาด: ' + e.message, 'err');
+  }
+  finally {
+    clearTimeout(timer);
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ค้นหาสินค้า';
+    btn.disabled = false; setMode(mode);
+  }
+}
+
+function renderStockInfo(d) {
+  const rem = Number(d.remaining) || 0;
+  const isIn = mode === 'in';
+  const cls = isIn ? 'in' : 'out';
+  const rc = rem <= 0 ? 'var(--red)' : rem <= d.originalQty * 0.1 ? 'var(--amber)' : 'var(--green)';
+  const st = rem <= 0 ? 'หมด' : rem <= d.originalQty * 0.1 ? 'ใกล้หมด' : 'พร้อม';
+
+  // ── จ่ายออก: แสดง Zone banner เด่นๆ บอกตำแหน่งไปหยิบ ──
+  if (!isIn) {
+    const zoneVal = d.zone
+      ? `<div class="zone-banner-val">${d.zone}</div>`
+      : `<div class="zone-empty">ยังไม่ระบุตำแหน่ง</div>`;
+    document.getElementById('zone-banner-wrap').innerHTML = `
+      <div class="zone-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div>
+          <div class="zone-banner-label">📍 ไปหยิบที่ตำแหน่ง</div>
+          ${zoneVal}
+        </div>
+      </div>`;
+  }
+
+  // ── ข้อมูลสินค้า (goodcode + ชื่อ แสดงเป็นข้อมูลประกอบ) ──
+  document.getElementById('stock-info-wrap').innerHTML = `
+    <div class="info-card ${cls}">
+      <div class="info-top">
+        <div>
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">ยอดคงเหลือ</div>
+          <div><span class="remain-num" style="color:${rc}">${fmt(rem)}</span><span style="font-size:14px;color:var(--t3);margin-left:6px">${d.goodunit||'EA'}</span></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--t3)">สถานะ</div>
+          <div style="font-size:14px;font-weight:700;color:${rc}">${st}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:6px">ตั้งต้น</div>
+          <div style="font-size:12px;color:var(--t2);font-family:var(--mono)">${fmt(d.originalQty)}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:2px">เข้า / ออก</div>
+          <div style="font-size:12px;font-family:var(--mono)"><span style="color:var(--green)">+${fmt(d.totalIn)}</span><span style="color:var(--t3)"> / </span><span style="color:var(--red)">-${fmt(d.totalOut)}</span></div>
+        </div>
+      </div>
+      <div class="info-meta">
+        <span class="ml">goodcode</span><span class="mv mono">${d.goodcode||'—'}</span>
+        <span class="ml">ชื่อ</span><span class="mv">${d.goodname||'—'}</span>
+        ${isIn ? `<span class="ml">Zone ปัจจุบัน</span><span class="mv mono">${d.zone||'— (ยังไม่ระบุ)'}</span>` : ''}
+      </div>
+    </div>`;
+
+  if (!isIn && rem <= 0) {
+    document.getElementById('lookup-err').innerHTML = `<div class="alert a-warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><span>ยอดคงเหลือ 0 ไม่สามารถจ่ายออกได้</span></div>`;
+    return;
+  }
+
+  // รับเข้า: แสดงช่อง Zone
+  if (isIn) {
+    document.getElementById('zone-inp').value = '';
+    renderZoneChips();
+    document.getElementById('zone-card').style.display = 'block';
+  }
+
+  document.getElementById('qty-unit').textContent = d.goodunit || 'EA';
+  document.getElementById('qty-inp').value = 1;
+  document.getElementById('qty-inp').className = `qinput ${cls}`;
+  document.getElementById('sn3').className = isIn ? 'sn' : 'sn out';
+  document.getElementById('qty-card').style.display = 'block';
+  document.getElementById('confirm-wrap').style.display = 'block';
+  const cfb = document.getElementById('confirm-btn');
+  cfb.className = `btn btn-${cls}`;
+  cfb.innerHTML = isIn
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20"/><path d="M17 7l-5-5-5 5"/></svg> ยืนยัน รับเข้า'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20"/><path d="M7 17l5 5 5-5"/></svg> ยืนยัน จ่ายออก';
+  document.querySelectorAll('.qq').forEach(b => b.className = `qq ${cls}`);
+  validateQty();
+  showToast(`พบ ${d.goodcode}! คงเหลือ ${fmt(rem)} ${d.goodunit||'EA'}`, 'ok');
+  setTimeout(() => document.getElementById('qty-inp').select(), 100);
+}
+
+function adjQty(d) {
+  const el = document.getElementById('qty-inp');
+  const max = (mode === 'out' && stock) ? Number(stock.remaining) : 99999;
+  el.value = Math.max(1, Math.min(max, parseInt(el.value||1) + d));
+  validateQty();
+}
+function setQty(n) { document.getElementById('qty-inp').value = n; validateQty(); }
+function setQtyMax() { if (stock && mode === 'out') setQty(stock.remaining); }
+
+function validateQty() {
+  const qty = Number(document.getElementById('qty-inp').value);
+  const max = (mode === 'out' && stock) ? Number(stock.remaining) : 99999;
+  const warn = document.getElementById('qty-warn');
+  const btn = document.getElementById('confirm-btn');
+  if (qty > max && mode === 'out') {
+    warn.innerHTML = `<div class="alert a-warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><span>เกินยอดคงเหลือ! (คงเหลือ ${fmt(max)})</span></div>`;
+    if (btn) btn.disabled = true;
+  } else if (qty <= 0) {
+    warn.innerHTML = `<div class="alert a-warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><span>จำนวนต้องมากกว่า 0</span></div>`;
+    if (btn) btn.disabled = true;
+  } else {
+    warn.innerHTML = '';
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function doMove() {
+  if (!stock) return;
+  const qty = Number(document.getElementById('qty-inp').value);
+  if (qty <= 0) { showToast('จำนวนไม่ถูกต้อง', 'err'); return; }
+  if (mode === 'out' && qty > stock.remaining) { showToast('เกินยอดคงเหลือ!', 'err'); return; }
+
+  const zoneInput = mode === 'in' ? document.getElementById('zone-inp').value.trim() : '';
+  const btn = document.getElementById('confirm-btn');
+  btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+  btn.disabled = true;
+  const type = mode === 'in' ? 'รับเข้า' : 'จ่ายออก';
+
+  try {
+    await fetch(gasUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'move', type, docuno: stock.docuno, qty, zone: zoneInput, user, remark: '' }) });
+
+    const newRem = mode === 'in' ? stock.remaining + qty : stock.remaining - qty;
+    const finalZone = zoneInput || stock.zone;
+    hist.unshift({ ts: new Date().toISOString(), type, docuno: stock.docuno, goodcode: stock.goodcode, goodname: stock.goodname, qty, unit: stock.goodunit, zone: finalZone, newRemaining: newRem, user });
+    if (hist.length > 60) hist.length = 60;
+    localStorage.setItem('hist', JSON.stringify(hist));
+
+    // อัปเดต zoneList ถ้ามีโซนใหม่
+    if (zoneInput && !zoneList.includes(zoneInput)) {
+      zoneList.push(zoneInput);
+      localStorage.setItem('zoneList', JSON.stringify(zoneList));
+    }
+
+    const emoji = mode === 'in' ? '📥' : '📤';
+    const zoneMsg = (mode === 'in' && zoneInput) ? ` @ ${zoneInput}` : '';
+    showToast(`${emoji} ${type}สำเร็จ ${qty} ${stock.goodunit||'EA'}${zoneMsg} (เหลือ ${fmt(newRem)})`, 'ok');
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+    setTimeout(resetForm, 1300);
+  } catch(e) { showToast('เกิดข้อผิดพลาด ลองใหม่', 'err'); }
+  finally { setMode(mode); btn.disabled = false; }
+}
+
+function resetForm() {
+  document.getElementById('docuno-inp').value = '';
+  updateInputStyle();
+  hideInfo();
+  setTimeout(() => document.getElementById('docuno-inp').focus(), 100);
+}
+
+function renderHist() {
+  const totIn = hist.filter(h => h.type === 'รับเข้า').reduce((s,h) => s+h.qty, 0);
+  const totOut = hist.filter(h => h.type === 'จ่ายออก').reduce((s,h) => s+h.qty, 0);
+  document.getElementById('sum-grid').innerHTML = `<div class="sum-card"><div class="sum-num" style="color:var(--text)">${hist.length}</div><div class="sum-lbl">รายการ</div></div><div class="sum-card"><div class="sum-num" style="color:var(--green)">+${fmt(totIn)}</div><div class="sum-lbl">รับเข้า</div></div><div class="sum-card"><div class="sum-num" style="color:var(--red)">-${fmt(totOut)}</div><div class="sum-lbl">จ่ายออก</div></div>`;
+  const wrap = document.getElementById('hist-wrap');
+  if (!hist.length) { wrap.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>ยังไม่มีประวัติ</p></div>`; return; }
+  wrap.innerHTML = hist.map(h => {
+    const isIn = h.type === 'รับเข้า';
+    return `<div class="hi"><div class="hi-top"><div><span class="hi-badge ${isIn?'in':'out'}">${h.type}</span><div class="hi-code" style="margin-top:4px">${h.docuno}</div></div><div class="hi-qty ${isIn?'in':'out'}">${isIn?'+':'-'}${fmt(h.qty)} ${h.unit||'EA'}</div></div><div class="hi-name">${h.goodcode||''} · ${h.goodname||'—'}</div><div class="hi-meta"><span>${new Date(h.ts).toLocaleString('th-TH',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})}</span>${h.zone?`<span>📍 ${h.zone}</span>`:''}<span>เหลือ ${fmt(h.newRemaining)}</span><span>${h.user}</span></div></div>`;
+  }).join('');
+  document.getElementById('hist-count').textContent = hist.length;
+}
+
+function saveGas() {
+  gasUrl = document.getElementById('gas-input').value.trim();
+  localStorage.setItem('gasUrl', gasUrl);
+  document.getElementById('gas-display').textContent = gasUrl || 'ยังไม่ได้ตั้งค่า';
+  showToast('บันทึก URL แล้ว', 'ok');
+  loadZones();
+}
+
+async function openCam() {
+  const isIn = mode === 'in';
+  const cls = isIn ? 'in' : 'out';
+  document.getElementById('s-label').className = `slabel ${cls}`;
+  document.getElementById('s-line').className = `sline ${cls}`;
+  ['sc-tl','sc-tr','sc-bl','sc-br'].forEach(id => { document.getElementById(id).className = `sc ${cls} ${id.replace('sc-','')}`; });
+  document.getElementById('man-btn').className = cls;
+  document.getElementById('cam-modal').classList.add('open');
+  document.getElementById('man-input').value = '';
+  document.getElementById('s-hint').textContent = 'กำลังเปิดกล้อง...';
+  try {
+    const ZXing = window.ZXing;
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.CODE_93, ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.ITF, ZXing.BarcodeFormat.CODABAR, ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.DATA_MATRIX]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    camReader = new ZXing.BrowserMultiFormatReader(hints, 150);
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { min:640, ideal:1280 }, height: { min:480, ideal:720 } } });
+    const track = stream.getVideoTracks()[0];
+    try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch(e){}
+    if (track.getCapabilities && track.getCapabilities().torch) document.getElementById('torch-btn').classList.add('show');
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+    await video.play();
+    document.getElementById('s-hint').textContent = 'จ่อบาร์โค้ดในกรอบ ระยะ 10-20 ซม.';
+    camReader.decodeFromVideoElement(video, (result) => {
+      if (!result) return;
+      const now = Date.now();
+      if (now - lastScan < 800) return;
+      lastScan = now;
+      onScan(result.getText());
+    });
+  } catch(e) {
+    document.getElementById('s-hint').textContent = 'เปิดกล้องไม่ได้';
+    showToast('เปิดกล้องไม่ได้', 'err');
+  }
+}
+
+function toggleTorch() {
+  if (!stream) return;
+  const track = stream.getVideoTracks()[0];
+  torchOn = !torchOn;
+  track.applyConstraints({ advanced: [{ torch: torchOn }] }).then(() => document.getElementById('torch-btn').classList.toggle('on', torchOn)).catch(() => { torchOn = !torchOn; });
+}
+
+function closeCam() {
+  document.getElementById('cam-modal').classList.remove('open');
+  if (camReader) { try { camReader.reset(); } catch(e){} camReader = null; }
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  const v = document.getElementById('video');
+  if (v.srcObject) v.srcObject = null;
+  torchOn = false;
+  document.getElementById('torch-btn').classList.remove('on', 'show');
+}
+
+function onScan(code) {
+  closeCam();
+  const val = code.trim();
+  document.getElementById('docuno-inp').value = val;
+  updateInputStyle();
+  if (navigator.vibrate) navigator.vibrate(100);
+  showToast('สแกน: ' + val, 'ok');
+  setTimeout(checkStock, 300);
+}
+
+function confirmMan() {
+  const v = document.getElementById('man-input').value.trim();
+  if (v) onScan(v);
+}
+
+function fmt(n) {
+  const num = Number(n);
+  if (isNaN(num)) return '—';
+  return num % 1 === 0 ? num.toLocaleString() : num.toLocaleString('en-US',{maximumFractionDigits:2});
+}
+
+let tTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  const i = document.getElementById('t-icon');
+  document.getElementById('t-msg').textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  i.innerHTML = type === 'err' ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>' : '<polyline points="20 6 9 17 4 12"/>';
+  clearTimeout(tTimer);
+  tTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
